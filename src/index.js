@@ -44,7 +44,7 @@ io.on(CONNECTION_EVENT, (socket) => {
 
 setInterval(() => {
   io.emit('players', players);
-}, 1000 / 10);
+}, 1000 / 30);
 
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
