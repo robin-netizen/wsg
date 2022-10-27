@@ -18,19 +18,23 @@
         height: 300px;
         background: gray;
       }
+
+      .name {
+        position: absolute;
+        top: -10px;
+        left: -5px;
+        font-size: 10px;
+      }
     </style>
   </head>
   <body>
-    <div id="board">
-
-    </div>
+    <div id="board"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const socket = io();
 
       const boardEl = document.getElementById('board');
-
       const playersMap = {};
       const keysDown = {
         up: false,
@@ -41,66 +45,73 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'd') {
-          keysDown["right"] = true;
+          keysDown['right'] = true;
         } else if (e.key === 'w') {
-          keysDown["up"] = true;
+          keysDown['up'] = true;
         } else if (e.key === 'a') {
-          keysDown["left"] = true;
+          keysDown['left'] = true;
         } else if (e.key === 's') {
-          keysDown["down"] = true;
-        }        
+          keysDown['down'] = true;
+        }
       });
-      
+
       document.addEventListener('keyup', (e) => {
         if (e.key === 'd') {
-          keysDown["right"] = false;
+          keysDown['right'] = false;
         } else if (e.key === 'w') {
-          keysDown["up"] = false;
+          keysDown['up'] = false;
         } else if (e.key === 'a') {
-          keysDown["left"] = false;
+          keysDown['left'] = false;
         } else if (e.key === 's') {
-          keysDown["down"] = false;
-        }        
+          keysDown['down'] = false;
+        }
       });
 
       setInterval(() => {
-        if (keysDown["right"]) {
-          socket.emit("right");
-        } else if (keysDown["up"]) {
-          socket.emit("up");
-        } else if (keysDown["left"]) {
-          socket.emit("left");
-        } else if (keysDown["down"]) {
-          socket.emit("down");
+        if (keysDown['right']) {
+          socket.emit('right');
+        } else if (keysDown['up']) {
+          socket.emit('up');
+        } else if (keysDown['left']) {
+          socket.emit('left');
+        } else if (keysDown['down']) {
+          socket.emit('down');
         }
       }, 1000 / 30);
 
       const getRandomColor = () => Math.floor(255 * Math.random());
 
       socket.on('players', (players) => {
-        try {
         for (const player of players) {
           if (!playersMap[player.id]) {
             playersMap[player.id] = player;
             const playerEl = document.createElement('div');
+            const nameEl = document.createElement('div');
             playerEl.classList.add('player');
+            nameEl.classList.add('name');
             boardEl.appendChild(playerEl);
+            playerEl.append(nameEl);
+            nameEl.innerText = player.name;
             player.el = playerEl;
             player.el.style.background = `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`;
+            if (player.id === socket.id) {
+              player.el.style.border = '1px solid red';
+            }
           }
           playersMap[player.id].el.style.left = player.x + 'px';
           playersMap[player.id].el.style.top = player.y + 'px';
         }
-      } catch (err) {
-        console.log(err);
-      }
       });
 
-      socket.on("playerDisconnected", (playerId) => {
-        console.log("playerDisconnected", playerId);
+      socket.on('playerDisconnected', (playerId) => {
+        console.log('playerDisconnected', playerId);
         const player = playersMap[playerId];
         delete playersMap[palyerId];
         player.el.remove();
+      });
+
+      socket.on('id', (id) => {
+        myId = id;
       });
     </script>
   </body>
